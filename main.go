@@ -27,6 +27,7 @@ func directSearch(b1, b2, delB1, fzad float64) (float64, float64, float64, int) 
 	bestF := sse(bestB1, bestB2)
 	iterations := 0
 
+	fmt.Println("=== Метод прямого поиска ===")
 	for step > fzad {
 		iterations++
 		improved := false
@@ -48,12 +49,19 @@ func directSearch(b1, b2, delB1, fzad float64) (float64, float64, float64, int) 
 		if !improved {
 			step /= 2
 		}
+
+		fmt.Printf("Iter: %d\n", iterations)
+		fmt.Printf("b1: %.6f\n", bestB1)
+		fmt.Printf("b2: %.6f\n", bestB2)
+		fmt.Printf("Owibka: %.6f\n", bestF)
+		fmt.Println("----------------------------------------")
+
 	}
 
 	return bestB1, bestB2, bestF, iterations
 }
 
-func simplexMethod(b1, b2 float64) (float64, float64, float64, int) {
+func simplexMethod(b1, b2 float64) (float64, float64, float64) {
 	alpha, gamma, rho, sigma := 1.0, 2.0, 0.5, 0.5
 	simplex := [3][2]float64{
 		{b1, b2},
@@ -67,6 +75,9 @@ func simplexMethod(b1, b2 float64) (float64, float64, float64, int) {
 	}
 
 	iterations := 0
+
+	fmt.Printf("=== Симплекс-метод ===\n")
+
 	for iter := 0; iter < 500; iter++ {
 		iterations = iter + 1
 
@@ -119,12 +130,18 @@ func simplexMethod(b1, b2 float64) (float64, float64, float64, int) {
 			}
 		}
 
+		fmt.Printf("Iter: %d\n", iterations)
+		fmt.Printf("b1: %.6f\n", simplex[0][0])
+		fmt.Printf("b2: %.6f\n", simplex[0][1])
+		fmt.Printf("Owibka: %.6f\n", f[0])
+		fmt.Println("----------------------------------------")
+
 		if math.Abs(f[2]-f[0]) < 0.001 {
 			break
 		}
 	}
 
-	return simplex[0][0], simplex[0][1], f[0], iterations
+	return simplex[0][0], simplex[0][1], f[0]
 }
 
 func main() {
@@ -137,16 +154,16 @@ func main() {
 	fmt.Println()
 
 	b1_ds, b2_ds, sse_ds, iter_ds := directSearch(2.0, 1.0, 0.1, 0.001)
-	fmt.Printf("=== Метод прямого поиска ===\n")
+
+	b1_sm, b2_sm, sse_sm := simplexMethod(2.0, 1.0)
+	fmt.Println("Best values direct search:")
 	fmt.Printf("b1 = %.6f\n", b1_ds)
 	fmt.Printf("b2 = %.6f\n", b2_ds)
 	fmt.Printf("SSE = %.6f\n", sse_ds)
 	fmt.Printf("Итераций: %d\n\n", iter_ds)
 
-	b1_sm, b2_sm, sse_sm, iter_sm := simplexMethod(2.0, 1.0)
-	fmt.Printf("=== Симплекс-метод ===\n")
+	fmt.Println("Best values simplex method:")
 	fmt.Printf("b1 = %.6f\n", b1_sm)
 	fmt.Printf("b2 = %.6f\n", b2_sm)
 	fmt.Printf("SSE = %.6f\n", sse_sm)
-	fmt.Printf("Итераций: %d\n", iter_sm)
 }
