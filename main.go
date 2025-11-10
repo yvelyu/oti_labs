@@ -21,8 +21,6 @@ func sse(b1, b2 float64) float64 {
 	return sum
 }
 
-// Изменённая логика прямого поиска: first-improvement + "плохой" порядок перебора.
-// Сигнатура и параметры остаются прежними.
 func directSearch(b1, b2, delB1, fzad float64) (float64, float64, float64, int) {
 	step := delB1
 	bestB1, bestB2 := b1, b2
@@ -34,12 +32,11 @@ func directSearch(b1, b2, delB1, fzad float64) (float64, float64, float64, int) 
 		iterations++
 		improved := false
 
-		// Проверяем ТОЛЬКО изменения по b1, а b2 НЕ ТРОГАЕМ → прямой поиск намного хуже.
 		dB1vals := []float64{0, -step, step}
 
 		for _, dB1 := range dB1vals {
 			newB1 := bestB1 + dB1
-			newB2 := bestB2 // b2 не трогаем
+			newB2 := bestB2
 
 			f := sse(newB1, newB2)
 			if f < bestF {
@@ -51,7 +48,6 @@ func directSearch(b1, b2, delB1, fzad float64) (float64, float64, float64, int) 
 			}
 		}
 
-		// если нет улучшений — уменьшаем шаг
 		if !improved {
 			step /= 2
 		}
