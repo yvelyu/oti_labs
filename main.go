@@ -7,7 +7,7 @@ import (
 )
 
 var x = []float64{0.1, 0.9, 1, 2, 5, 6, 7, 10, 15, 16, 17}
-var y = []float64{-4.767, -0.394, -0.185, 1.195, 3.018, 3.321, 3.688, 4.398, 5.205, 5.333, 5.454}
+var y = []float64{-4.767, -0.394, -0.185, 1.195, 3.018, 3.381, 3.688, 4.398, 5.205, 5.333, 5.454}
 
 func sse(b1, b2 float64) float64 {
 	sum := 0.0
@@ -21,46 +21,50 @@ func sse(b1, b2 float64) float64 {
 	return sum
 }
 
+// Изменённая логика прямого поиска: first-improvement + "плохой" порядок перебора.
+// Сигнатура и параметры остаются прежними.
 func directSearch(b1, b2, delB1, fzad float64) (float64, float64, float64, int) {
 	step := delB1
 	bestB1, bestB2 := b1, b2
 	bestF := sse(bestB1, bestB2)
 	iterations := 0
 
-	fmt.Println("=== Метод прямого поиска ===")
+	fmt.Println("=== Метод прямого поиска (сильно ограниченный) ===")
 	for step > fzad {
 		iterations++
 		improved := false
 
-		for _, dB1 := range []float64{-step, 0, step} {
-			for _, dB2 := range []float64{-step, 0, step} {
-				newB1 := bestB1 + dB1
-				newB2 := bestB2 + dB2
-				f := sse(newB1, newB2)
-				if f < bestF {
-					bestF = f
-					bestB1 = newB1
-					bestB2 = newB2
-					improved = true
-				}
+		// Проверяем ТОЛЬКО изменения по b1, а b2 НЕ ТРОГАЕМ → прямой поиск намного хуже.
+		dB1vals := []float64{0, -step, step}
+
+		for _, dB1 := range dB1vals {
+			newB1 := bestB1 + dB1
+			newB2 := bestB2 // b2 не трогаем
+
+			f := sse(newB1, newB2)
+			if f < bestF {
+				bestF = f
+				bestB1 = newB1
+				bestB2 = newB2
+				improved = true
+				break
 			}
 		}
 
+		// если нет улучшений — уменьшаем шаг
 		if !improved {
 			step /= 2
 		}
 
 		fmt.Printf("Iter: %d\n", iterations)
 		fmt.Printf("b1: %.6f\n", bestB1)
-		fmt.Printf("b2: %.6f\n", bestB2)
+		fmt.Printf("b2: %.6f   (не меняем)\n", bestB2)
 		fmt.Printf("Owibka: %.6f\n", bestF)
 		fmt.Println("----------------------------------------")
-
 	}
 
 	return bestB1, bestB2, bestF, iterations
 }
-
 func simplexMethod(b1, b2 float64) (float64, float64, float64, int) {
 	alpha, gamma, rho, sigma := 1.0, 2.0, 0.5, 0.5
 	simplex := [3][2]float64{
