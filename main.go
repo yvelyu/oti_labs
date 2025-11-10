@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-var x = []float64{0.1, 0.5, 1, 2, 5, 6, 7, 10, 15, 16, 17}
+var x = []float64{0.1, 0.9, 1, 2, 5, 6, 7, 10, 15, 16, 17}
 var y = []float64{-4.767, -0.394, -0.185, 1.195, 3.018, 3.321, 3.688, 4.398, 5.205, 5.333, 5.454}
 
 func sse(b1, b2 float64) float64 {
@@ -61,7 +61,7 @@ func directSearch(b1, b2, delB1, fzad float64) (float64, float64, float64, int) 
 	return bestB1, bestB2, bestF, iterations
 }
 
-func simplexMethod(b1, b2 float64) (float64, float64, float64) {
+func simplexMethod(b1, b2 float64) (float64, float64, float64, int) {
 	alpha, gamma, rho, sigma := 1.0, 2.0, 0.5, 0.5
 	simplex := [3][2]float64{
 		{b1, b2},
@@ -141,7 +141,7 @@ func simplexMethod(b1, b2 float64) (float64, float64, float64) {
 		}
 	}
 
-	return simplex[0][0], simplex[0][1], f[0]
+	return simplex[0][0], simplex[0][1], f[0], iterations
 }
 
 func main() {
@@ -155,7 +155,7 @@ func main() {
 
 	b1_ds, b2_ds, sse_ds, iter_ds := directSearch(2.0, 1.0, 0.1, 0.001)
 
-	b1_sm, b2_sm, sse_sm := simplexMethod(2.0, 1.0)
+	b1_sm, b2_sm, sse_sm, iter := simplexMethod(2.0, 1.0)
 	fmt.Println("Best values direct search:")
 	fmt.Printf("b1 = %.6f\n", b1_ds)
 	fmt.Printf("b2 = %.6f\n", b2_ds)
@@ -166,4 +166,5 @@ func main() {
 	fmt.Printf("b1 = %.6f\n", b1_sm)
 	fmt.Printf("b2 = %.6f\n", b2_sm)
 	fmt.Printf("SSE = %.6f\n", sse_sm)
+	fmt.Printf("Итераций: %d\n\n", iter)
 }
