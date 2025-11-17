@@ -21,46 +21,68 @@ func sse(b1, b2 float64) float64 {
 	return sum
 }
 
-func directSearch(b1, b2, delB1, fzad float64) (float64, float64, float64, int) {
-	step := delB1
-	bestB1, bestB2 := b1, b2
-	bestF := sse(bestB1, bestB2)
+func directSearch(b1, b2, delB1, Fzad float64) (float64, float64, float64, int) {
+	h := delB1
 	iterations := 0
+	maxIter := 50
 
-	fmt.Println("=== Метод прямого поиска (сильно ограниченный) ===")
-	for step > fzad {
-		iterations++
+	b := []float64{b1, b2}
+	currentF := sse(b[0], b[1])
+
+	fmt.Println("=== Метод прямого поиска ===")
+
+	for iterations < maxIter {
+		iterations += 2
+
+		bestB := []float64{b[0], b[1]}
+		bestF := math.Abs(currentF - Fzad) // расстояние до 0.001
+
+		candidates := [][]float64{
+			{b[0] + h, b[1]},
+			{b[0] - h, b[1]},
+			{b[0], b[1] + h},
+			{b[0], b[1] - h},
+		}
+
 		improved := false
 
-		dB1vals := []float64{0, -step, step}
+		for _, cand := range candidates {
+			fv := sse(cand[0], cand[1])
 
-		for _, dB1 := range dB1vals {
-			newB1 := bestB1 + dB1
-			newB2 := bestB2
+			if fv < Fzad {
+				continue
+			}
 
-			f := sse(newB1, newB2)
-			if f < bestF {
-				bestF = f
-				bestB1 = newB1
-				bestB2 = newB2
+			diff := math.Abs(fv - Fzad)
+
+			if diff < bestF {
+				bestF = diff
+				bestB = cand
 				improved = true
-				break
 			}
 		}
 
-		if !improved {
-			step /= 2
+		if improved {
+			b = bestB
+			currentF = sse(b[0], b[1])
+		} else {
+			h /= 2
 		}
 
 		fmt.Printf("Iter: %d\n", iterations)
-		fmt.Printf("b1: %.6f\n", bestB1)
-		fmt.Printf("b2: %.6f   (не меняем)\n", bestB2)
-		fmt.Printf("Owibka: %.6f\n", bestF)
+		fmt.Printf("b1: %.6f\n", b[0])
+		fmt.Printf("b2: %.6f\n", b[1])
+		fmt.Printf("Owibka: %.6f\n", currentF)
 		fmt.Println("----------------------------------------")
+
+		if math.Abs(currentF-Fzad) < 0.001 {
+			break
+		}
 	}
 
-	return bestB1, bestB2, bestF, iterations
+	return b[0], b[1], currentF, iterations
 }
+
 func simplexMethod(b1, b2 float64) (float64, float64, float64, int) {
 	alpha, gamma, rho, sigma := 1.0, 2.0, 0.5, 0.5
 	simplex := [3][2]float64{
